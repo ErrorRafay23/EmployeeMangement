@@ -1,5 +1,6 @@
 ﻿using EmployeeMangement.Models;
 using EmployeeMangement.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace EmployeeMangement.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly IEmployeeRepository _IEmployeeRepository;
@@ -28,6 +30,7 @@ namespace EmployeeMangement.Controllers
         public ViewResult Edit(int id)
         {
             Employee employee = _IEmployeeRepository.GetEmployee(id);
+          
             EmployeeEditViewModel employeeEdit = new EmployeeEditViewModel
             {
                 Id = employee.Id,
@@ -39,22 +42,13 @@ namespace EmployeeMangement.Controllers
             return View(employeeEdit);
         } 
         
-      
 
-
-
-
-
+        [AllowAnonymous]
         public ViewResult Index()
         {
             var model = _IEmployeeRepository.GetEmployees();
             return View(model);
         }
-
-
-
-
-
 
 
 
@@ -68,12 +62,20 @@ namespace EmployeeMangement.Controllers
             public ViewResult Details(int? id)
         {
             //return "id = " + id.Value.ToString() + " name = " + name;
-
             //Employee emp = _IEmployeeRepository.GetEmployee(id ?? 1);
+
+            
+
+            Employee employee = _IEmployeeRepository.GetEmployee(id.Value);
+            if(employee == null)
+            {
+                Response.StatusCode = 404;
+                return View("EmployeeNotFound", id.Value);
+            }
 
             HomeDetailsViewModel homeDetailsView = new HomeDetailsViewModel()
             {
-                Employee = _IEmployeeRepository.GetEmployee(id ?? 1),
+                Employee = employee,
                 PageTitle = "Employee Details"
             };
             return View(homeDetailsView);
